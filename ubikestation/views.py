@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+import urllib
+import gzip
+import json
 
 # Create your views here.
 
@@ -12,16 +15,21 @@ def getTwoNearestStations(request):
     lng = float(request.GET.get('lng'))
     errorCode = 0
     nearestStations = []
+    stations = getStationData()
 
     if not isValidLatLng(lat, lng):
         errorCode = -1
 	
-    return HttpResponse(errorCode)
+    return JsonResponse(stations)
 
 #TODO
 # receive ubike station data from api
 def getStationData():
-    return 0
+    url = "http://data.taipei/youbike"
+    url = urllib.urlretrieve(url, "data.gz")
+    jdata = gzip.open('data.gz', 'r').read()
+    data = json.loads(jdata)
+    return data["retVal"]
 
 # return true if input latlng is valid, else false
 def isValidLatLng(lat, lng):
