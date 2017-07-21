@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
+from geopy.geocoders import Nominatim
 import urllib
 import gzip
 import json
@@ -19,8 +20,11 @@ def getTwoNearestStations(request):
 
     if not isValidLatLng(lat, lng):
         errorCode = -1
+    
+    if not isInTaipeiCity(lat, lng):
+        errorCode = -2
 	
-    return JsonResponse(stations)
+    return HttpResponse(errorCode)
 
 #TODO
 # receive ubike station data from api
@@ -38,6 +42,9 @@ def isValidLatLng(lat, lng):
 #TODO
 # return true if input latlng is in Taipei City, else false
 def isInTaipeiCity(lat, lng):
-    return 0
+    geolocator = Nominatim()
+    location = geolocator.reverse(str(lat) + ", " + str(lng), timeout=500)
+    taipei_city = "臺北市"
+    return taipei_city in location.address
 
 	
