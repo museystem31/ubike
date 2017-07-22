@@ -47,7 +47,7 @@ def getTwoNearestStations(request):
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
 	
         response = {"code": 0, "result": result}
-        return HttpResponse(json.dumps(response, indent=4, ensure_ascii=False))
+        return HttpResponse(json.dumps(response, indent=4, ensure_ascii=False, sort_keys=True))
 
     except:
         # system error
