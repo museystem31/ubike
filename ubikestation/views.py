@@ -12,6 +12,7 @@ import json
 
 # given a latlng input return two nearest ubike stations
 def getTwoNearestStations(request):
+
     response = {}
     errorCode = 0
     result = []
@@ -35,6 +36,7 @@ def getTwoNearestStations(request):
             return JsonResponse(response)
 
         validStations = filterStationFull(stations)
+
         if len(validStations)==0:
             # all stations are full
             errorCode = 1
@@ -49,10 +51,48 @@ def getTwoNearestStations(request):
 
     except:
         # system error
+
         errorCode = -3
         result = []
         response = {"code": errorCode, "result": result} 
         return JsonResponse(response)
+    '''
+
+    response = {}
+    errorCode = 0
+    result = []
+   
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
+
+    stations = getStationData()
+
+    if not isValidLatLng(lat, lng):
+        # input latlng is not valid
+        errorCode = -1
+        response = {"code": errorCode, "result": result}
+        return JsonResponse(response)
+    
+    if not isInTaipeiCity(lat, lng):
+        # input latlng not in Taipei City
+        errorCode = -2
+        response = {"code": errorCode, "result": result}
+        return JsonResponse(response)
+
+    validStations = filterStationFull(stations)
+
+    if len(validStations)==0:
+        # all stations are full
+        errorCode = 1
+        response = {"code": errorCode, "result": result}
+        return JsonResponse(response)
+
+    validStations = filterStationNoBike(validStations)
+    result = getTwoNearestStationsHelper(lat, lng, validStations, result)
+	
+    response = {"code": 0, "result": result}
+    return HttpResponse(json.dumps(response, indent=4, ensure_ascii=False))
+    '''
 
 
 # receive ubike station data from api
@@ -82,24 +122,40 @@ def isInTaipeiCity(lat, lng):
 
 # remove station that is full from data
 def filterStationFull(stations):
+    filtered = []
+    '''
     for key,value in stations.iteritems():
-        if value["bemp"] == 0:
+        if int(value["bemp"]) == 0:
             stations.pop(value)
     return stations
+    '''
+    for key,value in stations.iteritems():
+        if int(value["bemp"]) != 0:
+            filtered.append(value)
+    return filtered
 
 # remove station that has no available bikes from data
 def filterStationNoBike(stations):
+    filtered = []
+    '''
     for key,value in stations.iteritems():
-        if value["sbi"] == 0:
+        if int(value["sbi"]) == 0:
             stations.pop(value)
     return stations
+
+    '''
+    for value in stations:
+        if int(value["sbi"]) != 0:
+            filtered.append(value)
+    return filtered
 
 # return the nearest stations to the input latlng
 def getTwoNearestStationsHelper(lat, lng, stations, result):
 
     nearestStations = []
     
-    for key,value in stations.iteritems():
+    for value in stations:    
+    #for key,value in stations.iteritems():
         station_point = (float(value["lat"]), float(value["lng"]))
         input_point = (lat, lng)
         distance = calculateDistance(station_point, input_point)
