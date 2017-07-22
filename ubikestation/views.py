@@ -15,7 +15,7 @@ def getTwoNearestStations(request):
     response = {}
     errorCode = 0
     result = []
-    
+   
     try:
         lat = request.GET.get('lat')
         lng = request.GET.get('lng')
@@ -45,14 +45,14 @@ def getTwoNearestStations(request):
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
 	
         response = {"code": 0, "result": result}
-        return JsonResponse(json.dumps(response), safe = False)
+        return JsonResponse(response)
 
     except:
         # system error
         errorCode = -3
         result = []
         response = {"code": errorCode, "result": result} 
-        return JsonResponse(json.dumps(response), safe = False)
+        return JsonResponse(response)
 
 
 # receive ubike station data from api
@@ -68,7 +68,7 @@ def isValidLatLng(lat, lng):
     try:
         lat = float(lat)
         lng = float(lng)
-        return (lat<=90 and lat>=-90) and (lng<=180 and lng>=-180)   
+        return (lat<=90 and lat>=-90) and (lng<=180 and lng>=-180)       
     except:
         return False
 
@@ -76,7 +76,7 @@ def isValidLatLng(lat, lng):
 # return true if input latlng is in Taipei City, else false
 def isInTaipeiCity(lat, lng):
     geolocator = Nominatim()
-    location = geolocator.reverse(str(lat) + ", " + str(lng), timeout=500)
+    location = geolocator.reverse(str(lat) + ", " + str(lng), timeout=180)
     taipei_city = "臺北市"
     return taipei_city in location.address
 
@@ -96,23 +96,29 @@ def filterStationNoBike(stations):
 
 # return the nearest stations to the input latlng
 def getTwoNearestStationsHelper(lat, lng, stations, result):
+
     nearestStations = []
+    
     for key,value in stations.iteritems():
         station_point = (float(value["lat"]), float(value["lng"]))
         input_point = (lat, lng)
         distance = calculateDistance(station_point, input_point)
+        
         if len(nearestStations)<2 :
             if len(nearestStations)<1:
                 nearestStations.append([value,distance])
             else:
+                #ensure nearestStations is in ascending order
                 if distance<nearestStations[0][1]:
                     nearestStations.append(nearestStations[0])
                     nearestStations[0] = [value,distance]
                 else:
                     nearestStations.append([value,distance])
+        
         elif distance<nearestStations[0][1]:
             nearestStations[1] = nearestStations[0]
             nearestStations[0] = [value,distance]            
+
         elif distance<nearestStations[1][1]:
             nearestStations[1] = [value,distance]
 	
@@ -121,7 +127,8 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
         numBike = station[0]["sbi"]
         entry = {"station":name, "num_ubike":numBike}
         result.append(entry)			
-	return len(result)
+	
+    return result
 
 def calculateDistance(point1,point2):
     return vincenty(point1, point2).miles
