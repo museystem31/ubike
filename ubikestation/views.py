@@ -45,7 +45,7 @@ def getTwoNearestStations(request):
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
 	
         response = {"code": 0, "result": result}
-        return JsonResponse(response)
+        return HttpResponse(json.dumps(response, indent=4, ensure_ascii=False))
 
     except:
         # system error
@@ -124,9 +124,9 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
 	
     for station in nearestStations:
         name = station[0]["sna"]
-        numBike = station[0]["sbi"]
-        entry = {"station":name, "num_ubike":numBike}
-        result.append(entry)			
+        numBike = int(station[0]["sbi"])
+        entry = {"station": name, "num_ubike": numBike}
+        result.append(entry)
 	
     return result
 
