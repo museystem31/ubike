@@ -1,1 +1,1 @@
-web: gunicorn ubike.wsgi --log-file -
+web: gunicorn ubikestation.wsgi --log-file -
