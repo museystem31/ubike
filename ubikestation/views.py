@@ -145,7 +145,7 @@ def calculateDistance(point1,point2):
 
 def isAllNull(stations):
     for key, value in stations.iteritems():
-        if value!=None:
+        if not stations[key] is None:
             return False
     return True
     
