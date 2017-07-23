@@ -41,6 +41,12 @@ def getTwoNearestStations(request):
             return JsonResponse(response)
 			
         validStations = filterStationNoBike(validStations)
+        
+		if isAllNull(validStations):
+            # all stations either in state full or no bikes, viewed as system error
+            response = [("code", -3), ("result", [])]
+            response = OrderedDict(response)
+            return JsonResponse(response)
 
         result = getTwoNearestStationsHelper(lat, lng, validStations, [])
         response = [("code",0), ("result", result)]
@@ -84,7 +90,6 @@ def isInTaipeiCity(lat, lng):
 def filterStationFull(stations):
     for key,value in stations.iteritems():
         if int(value["bemp"]) == 0:
-            print("this station is full")
             stations[key] = None
     return stations
 
@@ -93,7 +98,6 @@ def filterStationNoBike(stations):
     for key, value in stations.iteritems():
         if not stations[key] is None:
             if int(value["sbi"]) == 0:
-                print("this station has no bikes")
                 stations[key] = None
     return stations
         
