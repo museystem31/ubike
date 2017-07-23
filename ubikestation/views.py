@@ -27,13 +27,15 @@ def getTwoNearestStations(request):
         if not isValidLatLng(lat, lng):
             # input latlng is not valid
             errorCode = -1
-            response = {"code": errorCode, "result": result}
+            response = [("code", errorCode), ("result", result)]
+            response = OrderedDict(response)		
             return JsonResponse(response)
     
         if not isInTaipeiCity(lat, lng):
             # input latlng not in Taipei City
             errorCode = -2
-            response = {"code": errorCode, "result": result}
+            response = [("code", errorCode), ("result", result)]
+            response = OrderedDict(response)		
             return JsonResponse(response)
 
         validStations = filterStationFull(stations)
@@ -41,8 +43,9 @@ def getTwoNearestStations(request):
         if len(validStations)==0:
             # all stations are full
             errorCode = 1
-            response = {"code": errorCode, "result": result}
-            return JsonResponse(response)
+            response = [("code", errorCode), ("result", result)]
+            response = OrderedDict(response)		
+            return JsonResponse(json.dumps(response))
 
         validStations = filterStationNoBike(validStations)
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
@@ -56,8 +59,8 @@ def getTwoNearestStations(request):
     except:
         # system error
         errorCode = -3
-        result = []
-        response = {"code": errorCode, "result": result} 
+        response = [("code", errorCode), ("result", result)]
+        response = OrderedDict(response)
         return JsonResponse(response)
 
 # receive ubike station data from api
