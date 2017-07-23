@@ -42,7 +42,7 @@ def getTwoNearestStations(request):
 			
         validStations = filterStationNoBike(validStations)
         
-		if isAllNull(validStations):
+        if isAllNull(validStations):
             # all stations either in state full or no bikes, viewed as system error
             response = [("code", -3), ("result", [])]
             response = OrderedDict(response)
