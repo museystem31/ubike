@@ -38,7 +38,7 @@ def getTwoNearestStations(request):
             # all stations are full
             response = [("code", 1), ("result", [])]
             response = OrderedDict(response)
-            return JsonResponse(json.dumps(response))
+            return JsonResponse(response)
 
         validStations = filterStationNoBike(validStations)
         result = getTwoNearestStationsHelper(lat, lng, validStations, [])
@@ -88,9 +88,9 @@ def filterStationFull(stations):
 # remove station that has no available bikes from data
 def filterStationNoBike(stations):
     filtered = []
-    for value in stations:
-        if int(value["sbi"]) != 0:
-            filtered.append(value)
+    for station in stations:
+        if int(station["sbi"]) != 0:
+            filtered.append(station)
     return filtered
 
 # return the nearest stations to the input latlng
@@ -98,35 +98,35 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
 
     nearestStations = []
     
-    for value in stations:
-        station_point = (float(value["lat"]), float(value["lng"]))
+    for station in stations:
+        station_point = (float(station["lat"]), float(station["lng"]))
         input_point = (lat, lng)
         distance = calculateDistance(station_point, input_point)
         
         if len(nearestStations)<2 :
             if len(nearestStations)<1:
-                nearestStations.append([value,distance])
+                nearestStations.append([station,distance])
             else:
                 #ensure nearestStations is in ascending order
                 if distance<nearestStations[0][1]:
                     nearestStations.append(nearestStations[0])
-                    nearestStations[0] = [value,distance]
+                    nearestStations[0] = [station,distance]
                 else:
-                    nearestStations.append([value,distance])
+                    nearestStations.append([station,distance])
         
         elif distance<nearestStations[0][1]:
             nearestStations[1] = nearestStations[0]
-            nearestStations[0] = [value,distance]            
+            nearestStations[0] = [station,distance]            
 
         elif distance<nearestStations[1][1]:
-            nearestStations[1] = [value,distance]
+            nearestStations[1] = [station,distance]
 	
     for station in nearestStations:
         name = station[0]["sna"]
         numBike = int(station[0]["sbi"])
-        entry = [("station", name), ("num_ubike", numBike)]
-        entry = OrderedDict(entry)
-        result.append(entry)
+        station = [("station", name), ("num_ubike", numBike)]
+        station = OrderedDict(station)
+        result.append(station)
 	
     return result
 
