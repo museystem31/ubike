@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from geopy.geocoders import Nominatim
 from geopy.distance import vincenty
+from collections import OrderedDict
 import urllib
 import gzip
 import json
@@ -45,7 +46,7 @@ def getTwoNearestStations(request):
 
         validStations = filterStationNoBike(validStations)
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
-	
+        response = OrderedDict()
         response = {"code": 0, "result": result}
         return HttpResponse(json.dumps(response,ensure_ascii=False), content_type="application/json;charset=utf-8")
 
@@ -181,6 +182,7 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
     for station in nearestStations:
         name = station[0]["sna"]
         numBike = int(station[0]["sbi"])
+        entry = OrderedDict()
         entry = {"station": name, "num_ubike": numBike}
         result.append(entry)
 	
