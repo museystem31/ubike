@@ -34,16 +34,18 @@ def getTwoNearestStations(request):
 
         validStations = filterStationFull(stations)
 
-        if len(validStations)==0:
+        if isAllNull(validStations):
             # all stations are full
             response = [("code", 1), ("result", [])]
             response = OrderedDict(response)
             return JsonResponse(response)
-
+			
         validStations = filterStationNoBike(validStations)
+
         result = getTwoNearestStationsHelper(lat, lng, validStations, [])
         response = [("code",0), ("result", result)]
         response = OrderedDict(response)
+        
         return HttpResponse(json.dumps(response,ensure_ascii=False), 
                             content_type="application/json;charset=utf-8")
 
@@ -52,6 +54,7 @@ def getTwoNearestStations(request):
         response = [("code", -3), ("result", [])]
         response = OrderedDict(response)
         return JsonResponse(response)
+
 
 # receive ubike station data from api
 def getStationData():
@@ -79,47 +82,50 @@ def isInTaipeiCity(lat, lng):
 
 # remove station that is full from data
 def filterStationFull(stations):
-    filtered = []
     for key,value in stations.iteritems():
-        if int(value["bemp"]) != 0:
-            filtered.append(value)
-    return filtered
+        if int(value["bemp"]) == 0:
+            print("this station is full")
+            stations[key] = None
+    return stations
 
 # remove station that has no available bikes from data
 def filterStationNoBike(stations):
-    filtered = []
-    for station in stations:
-        if int(station["sbi"]) != 0:
-            filtered.append(station)
-    return filtered
+    for key, value in stations.iteritems():
+        if not stations[key] is None:
+            if int(value["sbi"]) == 0:
+                print("this station has no bikes")
+                stations[key] = None
+    return stations
+        
 
 # return the nearest stations to the input latlng
 def getTwoNearestStationsHelper(lat, lng, stations, result):
 
     nearestStations = []
-    
-    for station in stations:
-        station_point = (float(station["lat"]), float(station["lng"]))
-        input_point = (lat, lng)
-        distance = calculateDistance(station_point, input_point)
-        
-        if len(nearestStations)<2 :
-            if len(nearestStations)<1:
-                nearestStations.append([station,distance])
-            else:
-                #ensure nearestStations is in ascending order
-                if distance<nearestStations[0][1]:
-                    nearestStations.append(nearestStations[0])
-                    nearestStations[0] = [station,distance]
-                else:
-                    nearestStations.append([station,distance])
-        
-        elif distance<nearestStations[0][1]:
-            nearestStations[1] = nearestStations[0]
-            nearestStations[0] = [station,distance]            
 
-        elif distance<nearestStations[1][1]:
-            nearestStations[1] = [station,distance]
+    for key, value in stations.iteritems():
+        if not stations[key] is None:
+            station_point = (float(value["lat"]), float(value["lng"]))
+            input_point = (lat, lng)
+            distance = calculateDistance(station_point, input_point)
+        
+            if len(nearestStations)<2 :
+                if len(nearestStations)<1:
+                    nearestStations.append([value,distance])
+                else:
+                    #ensure nearestStations is in ascending order
+                    if distance<nearestStations[0][1]:
+                        nearestStations.append(nearestStations[0])
+                        nearestStations[0] = [value,distance]
+                    else:
+                        nearestStations.append([value,distance])
+        
+            elif distance<nearestStations[0][1]:
+                nearestStations[1] = nearestStations[0]
+                nearestStations[0] = [value,distance]            
+
+            elif distance<nearestStations[1][1]:
+                nearestStations[1] = [value,distance]
 	
     for station in nearestStations:
         name = station[0]["sna"]
@@ -132,3 +138,10 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
 
 def calculateDistance(point1,point2):
     return vincenty(point1, point2).miles
+
+def isAllNull(stations):
+    for key, value in stations.iteritems():
+        if value!=None:
+            return False
+    return True
+    
