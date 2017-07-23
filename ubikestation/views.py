@@ -41,7 +41,7 @@ def getTwoNearestStations(request):
             return JsonResponse(json.dumps(response))
 
         validStations = filterStationNoBike(validStations)
-        result = getTwoNearestStationsHelper(lat, lng, validStations, result)
+        result = getTwoNearestStationsHelper(lat, lng, validStations, [])
         response = [("code",0), ("result", result)]
         response = OrderedDict(response)
         return HttpResponse(json.dumps(response,ensure_ascii=False), 
@@ -132,6 +132,3 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
 
 def calculateDistance(point1,point2):
     return vincenty(point1, point2).miles
-    
-
-	
