@@ -46,7 +46,7 @@ def getTwoNearestStations(request):
 
         validStations = filterStationNoBike(validStations)
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
-        response = OrderedDict()
+        #response = OrderedDict()
         response = {"code": 0, "result": result}
         return HttpResponse(json.dumps(response,ensure_ascii=False), 
                             content_type="application/json;charset=utf-8")
@@ -130,7 +130,7 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
     for station in nearestStations:
         name = station[0]["sna"]
         numBike = int(station[0]["sbi"])
-        entry = OrderedDict()
+        #entry = OrderedDict()
         entry = {"station": name, "num_ubike": numBike}
         result.append(entry)
 	
