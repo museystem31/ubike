@@ -48,59 +48,21 @@ def getTwoNearestStations(request):
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
         response = OrderedDict()
         response = {"code": 0, "result": result}
-        return HttpResponse(json.dumps(response,ensure_ascii=False), content_type="application/json;charset=utf-8")
+        return HttpResponse(json.dumps(response,ensure_ascii=False), 
+                            content_type="application/json;charset=utf-8")
 
     except:
         # system error
-
         errorCode = -3
         result = []
         response = {"code": errorCode, "result": result} 
         return JsonResponse(response)
-    '''
-
-    response = {}
-    errorCode = 0
-    result = []
-   
-    lat = request.GET.get('lat')
-    lng = request.GET.get('lng')
-
-    stations = getStationData()
-
-    if not isValidLatLng(lat, lng):
-        # input latlng is not valid
-        errorCode = -1
-        response = {"code": errorCode, "result": result}
-        return JsonResponse(response)
-    
-    if not isInTaipeiCity(lat, lng):
-        # input latlng not in Taipei City
-        errorCode = -2
-        response = {"code": errorCode, "result": result}
-        return JsonResponse(response)
-
-    validStations = filterStationFull(stations)
-
-    if len(validStations)==0:
-        # all stations are full
-        errorCode = 1
-        response = {"code": errorCode, "result": result}
-        return JsonResponse(response)
-
-    validStations = filterStationNoBike(validStations)
-    result = getTwoNearestStationsHelper(lat, lng, validStations, result)
-	
-    response = {"code": 0, "result": result}
-    return HttpResponse(json.dumps(response, indent=4, ensure_ascii=False))
-    '''
-
 
 # receive ubike station data from api
 def getStationData():
     url = "http://data.taipei/youbike"
     url = urllib.urlretrieve(url, "data.gz")
-    jdata = gzip.open('data.gz', 'r').read()
+    jdata = gzip.open('data.gz', 'r').read().decode('utf-8')
     data = json.loads(jdata)
     return data["retVal"]
 
@@ -113,7 +75,6 @@ def isValidLatLng(lat, lng):
     except:
         return False
 
-
 # return true if input latlng is in Taipei City, else false
 def isInTaipeiCity(lat, lng):
     geolocator = Nominatim()
@@ -124,12 +85,6 @@ def isInTaipeiCity(lat, lng):
 # remove station that is full from data
 def filterStationFull(stations):
     filtered = []
-    '''
-    for key,value in stations.iteritems():
-        if int(value["bemp"]) == 0:
-            stations.pop(value)
-    return stations
-    '''
     for key,value in stations.iteritems():
         if int(value["bemp"]) != 0:
             filtered.append(value)
@@ -138,13 +93,6 @@ def filterStationFull(stations):
 # remove station that has no available bikes from data
 def filterStationNoBike(stations):
     filtered = []
-    '''
-    for key,value in stations.iteritems():
-        if int(value["sbi"]) == 0:
-            stations.pop(value)
-    return stations
-
-    '''
     for value in stations:
         if int(value["sbi"]) != 0:
             filtered.append(value)
