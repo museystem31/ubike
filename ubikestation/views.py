@@ -14,10 +14,6 @@ import json
 # given a latlng input return two nearest ubike stations
 def getTwoNearestStations(request):
 
-    response = {}
-    errorCode = 0
-    result = []
-   
     try:
         lat = request.GET.get('lat')
         lng = request.GET.get('lng')
@@ -26,31 +22,26 @@ def getTwoNearestStations(request):
 
         if not isValidLatLng(lat, lng):
             # input latlng is not valid
-            errorCode = -1
-            response = [("code", errorCode), ("result", result)]
+            response = [("code", -1), ("result", [])]
             response = OrderedDict(response)		
             return JsonResponse(response)
     
         if not isInTaipeiCity(lat, lng):
             # input latlng not in Taipei City
-            errorCode = -2
-            response = [("code", errorCode), ("result", result)]
-            response = OrderedDict(response)		
+            response = [("code", -2), ("result", [])]
+            response = OrderedDict(response)
             return JsonResponse(response)
 
         validStations = filterStationFull(stations)
 
         if len(validStations)==0:
             # all stations are full
-            errorCode = 1
-            response = [("code", errorCode), ("result", result)]
-            response = OrderedDict(response)		
+            response = [("code", 1), ("result", [])]
+            response = OrderedDict(response)
             return JsonResponse(json.dumps(response))
 
         validStations = filterStationNoBike(validStations)
         result = getTwoNearestStationsHelper(lat, lng, validStations, result)
-        #response = OrderedDict()
-        #response = {"code": 0, "result": result}
         response = [("code",0), ("result", result)]
         response = OrderedDict(response)
         return HttpResponse(json.dumps(response,ensure_ascii=False), 
@@ -58,8 +49,7 @@ def getTwoNearestStations(request):
 
     except:
         # system error
-        errorCode = -3
-        response = [("code", errorCode), ("result", result)]
+        response = [("code", -3), ("result", [])]
         response = OrderedDict(response)
         return JsonResponse(response)
 
@@ -108,8 +98,7 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
 
     nearestStations = []
     
-    for value in stations:    
-    #for key,value in stations.iteritems():
+    for value in stations:
         station_point = (float(value["lat"]), float(value["lng"]))
         input_point = (lat, lng)
         distance = calculateDistance(station_point, input_point)
@@ -135,8 +124,6 @@ def getTwoNearestStationsHelper(lat, lng, stations, result):
     for station in nearestStations:
         name = station[0]["sna"]
         numBike = int(station[0]["sbi"])
-        #entry = OrderedDict()
-        #entry = {"station": name, "num_ubike": numBike}
         entry = [("station", name), ("num_ubike", numBike)]
         entry = OrderedDict(entry)
         result.append(entry)
